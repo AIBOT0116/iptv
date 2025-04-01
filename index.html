@@ -31,7 +31,7 @@
         }
 
         .req {
-            font-size: 20px;
+            font-size: 16px;
             color: rgba(255, 255, 255, 0.8);
         }
 
@@ -159,7 +159,7 @@
         }
 
         video {
-            object-fit: cover;
+            object-fit: fill;
         }
 
         /* .shaka-overflow-menu { background-color: rgb(41, 41, 163); color: rgb(153, 153, 153); }  
@@ -175,7 +175,6 @@
 
 <body>
     <div id="player-container">
-        <p class="req">If video not play try different channel</p>
         <!-- Shaka Player container -->
         <div class="vid-con">
             <div data-shaka-player-container>
@@ -183,6 +182,7 @@
                     poster="https://img.freepik.com/free-vector/web-video-media-player-interface-template_1017-23411.jpg?ga=GA1.1.1304747714.1743448654&semt=ais_hybrid"></video>
             </div>
         </div>
+        <p class="req"><b>Note: </b>When switching channel wait 10s for load & play. If video not play try different channel.</p>
         <div id="search-bar-container">
             <input type="text" id="search-bar" placeholder="Search for channels..." onkeyup="filterChannels()">
             <div id="neon-switch">
