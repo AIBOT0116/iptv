@@ -159,7 +159,7 @@
         }
 
         video {
-            object-fit: fill;
+            object-fit: cover;
         }
 
         /* .shaka-overflow-menu { background-color: rgb(41, 41, 163); color: rgb(153, 153, 153); }  
@@ -416,6 +416,12 @@
             });
         }
 
+        // Load everything when the page is ready  
+        window.onload = async () => {
+            await initPlayer();
+            loadChannels();
+            updateNewViewsCounter();
+        };  
     </script>
 </body>
 
