@@ -4,14 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/1179/1179069.png" type="image/x-icon">
     <title>Web ipTV</title>
     <!-- Shaka Player scripts and styles -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"
-        crossorigin="anonymous">
-    <!-- Preload the target DASH stream -->
-    <link rel="preload" href="https://live.tsports.com/mobile_hls/tsports_live_2/index.m3u8" as="fetch"
         crossorigin="anonymous">
 
     <style>
@@ -42,7 +40,8 @@
         [data-shaka-player-container] video {
             width: 100%;
             height: auto;
-            margin-bottom: 20px;
+            max-width: 100%;
+            margin-bottom: 10px;
             aspect-ratio: 16/9;
             border-radius: 10px;
         }
