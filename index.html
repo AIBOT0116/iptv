@@ -37,7 +37,8 @@
             max-width: 1080px;
         }
 
-        [data-shaka-player-container] video {
+        [data-shaka-player-container] video,
+        [data-shaka-player-container] iframe {
             width: 100%;
             height: 100%;
             max-width: 100%;
@@ -185,11 +186,14 @@
         const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/temp.live';
         const targetUrl = 'https://a201aivottlinear-a.akamaihd.net/OTTB/lhr-nitro/clients/dash/enc/wf8usag51e/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd?|drmScheme=clearkey&drmLicense=ae26845bd33038a9c0774a0981007294:63ac662dde310cfb4cc6f9b43b34196d';
         let neonActive = true;
-        let player; // Shaka Player instance  
+        let player; // Shaka Player instance 
+        let isIframeMode = false; // Track if iframe is being used  
+        let originalVideoElement; // Store original video element for restoration   
 
         // Initialize Shaka Player  
         async function initPlayer() {
             const video = document.getElementById('video');
+            originalVideoElement = video; // Store original video element  
             const ui = video.ui;
             const controls = ui.getControls();
             player = controls.getPlayer();
@@ -224,15 +228,17 @@
                         }
                     },
                     dash: {
-                        ignoreDrmInfo: false,
+                        ignoreDrmInfo: true,
                         ignoreMinBufferTime: true,
                         autoCorrectDrift: true
                     }
                 },
                 abr: {
                     enabled: true,
-                    defaultBandwidthEstimate: 5000000
-                }
+                    defaultBandwidthEstimate: 2000000
+                },
+                preferredAudioCodecs: ['mp4a.40.2'],
+                preferredVideoCodecs: ['avc1.4d401e']
             });
 
             ui.configure({
@@ -247,24 +253,6 @@
 
         function onPlayerErrorEvent(event) {
             console.error('Player Error:', event.detail);
-        }
-
-        function toggleNeon() {
-            const videoContainer = document.querySelector('.vid-con');
-            const toggleButton = document.getElementById('neon-toggle');
-
-            if (neonActive) {
-                videoContainer.style.boxShadow = 'none';
-                toggleButton.classList.remove('active');
-            } else {
-                videoContainer.style.boxShadow = '0 0 15px var(--neon-color, #00f), 0 0 30px var(--neon-color, #00f), 0 0 45px var(--neon-color, #f0f), 0 0 60px var(--neon-color, #f0f)';
-                toggleButton.classList.add('active');
-            }
-            neonActive = !neonActive;
-
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            }
         }
 
         async function fetchM3U(url) {
@@ -364,31 +352,95 @@
         }
 
         async function playChannel(channel) {
-            try {
-                // Reset DRM configuration  
-                player.configure({ drm: { servers: {}, clearKeys: {} } });
+            const playerContainer = document.querySelector('[data-shaka-player-container]');
 
-                // Handle DASH with DRM  
-                if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey') {
-                    player.configure({
-                        drm: {
-                            clearKeys: {
-                                [channel.drm.keyId]: channel.drm.key
+            // Check if the channel URL is an iframe-based link  
+            const isIframeLink = /(re\.fredflix\.fun\/sports\/play\.php|sliv\.fredflix\.fun\/play\.php|fredflix\.fun\/play\.php|re\.fredflix\.fun\/Jio\/play\.php|user65873\.hls-video\.net)/.test(channel.streamUrl);
+
+            if (isIframeLink) {
+                // Switch to iframe mode  
+                if (!isIframeMode) {
+                    // Remove video element and create iframe  
+                    const video = document.getElementById('video');
+                    video.remove();
+                    const iframe = document.createElement('iframe');
+                    iframe.id = 'video-iframe';
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.style.borderRadius = '10px';
+                    iframe.style.objectFit = 'contain';
+                    iframe.allow = 'autoplay; fullscreen';
+                    iframe.allowFullscreen = true;
+                    playerContainer.appendChild(iframe);
+                    isIframeMode = true;
+
+                }
+
+                // Set iframe source  
+                const iframe = document.getElementById('video-iframe');
+                iframe.src = channel.streamUrl;
+                console.log('Iframe loaded:', channel.streamUrl);
+
+                // Hide Shaka Player controls for iframe  
+                const controls = document.querySelector('.shaka-controls-container');
+                if (controls) controls.style.display = 'none';
+            } else {
+                // Switch back to video mode if in iframe mode  
+                if (isIframeMode) {
+                    // Remove iframe and restore video element  
+                    const iframe = document.getElementById('video-iframe');
+                    if (iframe) iframe.remove();
+                    playerContainer.appendChild(originalVideoElement);
+                    isIframeMode = false;
+
+                    // Show Shaka Player controls  
+                    const controls = document.querySelector('.shaka-controls-container');
+                    if (controls) controls.style.display = '';
+                }
+
+                // Play stream using Shaka Player  
+                try {
+                    player.configure({ drm: { servers: {}, clearKeys: {} } });
+
+                    // Extract referer from URL parameters if present
+                    let referer = '';
+                    if (channel.streamUrl.includes('|')) {
+                        const params = new URLSearchParams(channel.streamUrl.split('|')[1]);
+                        referer = params.get('referer') || '';
+                    }
+
+                    // Configure network request to include referer header
+                    player.getNetworkingEngine().registerRequestFilter((type, request) => {
+                        if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+                            type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+                            if (referer) {
+                                request.headers['referer'] = referer;
                             }
                         }
                     });
-                    console.log('DRM Configured for DASH:', { keyId: channel.drm.keyId, key: channel.drm.key });
-                }
 
-                // Load the stream (HTTP, HTTPS HLS, or DASH)  
-                await player.load(channel.streamUrl);
-                console.log('Stream loaded successfully:', channel.streamUrl);
-            } catch (error) {
-                console.error('Error loading stream:', error);
-                throw error;
+                    // Handle DASH with DRM 
+                    if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey') {
+                        player.configure({
+                            drm: {
+                                clearKeys: {
+                                    [channel.drm.keyId]: channel.drm.key
+                                }
+                            }
+                        });
+                        console.log('DRM Configured for DASH:', { keyId: channel.drm.keyId, key: channel.drm.key });
+                    }
+
+                    // Load the stream (HTTP, HTTPS HLS, or DASH)  
+                    await player.load(channel.streamUrl);
+                    console.log('Stream loaded successfully:', channel.streamUrl);
+                } catch (error) {
+                    console.error('Error loading stream:', error);
+                    throw error;
+                }
             }
         }
-
         function filterChannels() {
             const searchValue = document.getElementById('search-bar').value.toLowerCase();
             const channelTiles = document.querySelectorAll('.channel-tile');
