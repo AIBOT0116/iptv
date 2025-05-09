@@ -7,8 +7,8 @@
     <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/1179/1179069.png" type="image/x-icon">
     <title>Web ipTV</title>
     <!-- Shaka Player scripts and styles -->
-    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.14.11/dist/shaka-player.ui.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.14.11/dist/controls.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/controls.min.css">
 
     <style>
         body {
@@ -28,6 +28,7 @@
         .req {
             font-size: 16px;
             color: rgba(255, 255, 255, 0.8);
+            margin: 16px 0 0;
         }
 
         .vid-con {
@@ -155,11 +156,20 @@
             background-color: rgba(0, 0, 0, 0.54);
             color: #999;
             backdrop-filter: blur(10px);
-            border-radius: 8px
+            border-radius: 8px;
+            padding: 10px 0;
         }
 
         .shaka-overflow-button-label {
             color: #f5f5f5
+        }
+
+        .shaka-current-selection-span {
+            color: #cacaca
+        }
+
+        .material-icons-round {
+            color: #e6e6e6
         }
 
         .shaka-settings-menu {
@@ -168,6 +178,10 @@
             backdrop-filter: blur(10px);
             border-radius: 8px;
             padding: 10px 0
+        }
+
+        .shaka-settings-menu button {
+            color: #fff
         }
 
         .shaka-overflow-menu button:hover,
@@ -349,7 +363,7 @@
             const secondaryChannels = await fetchM3U(m3uLinkSecondary);
 
             // Combine channels: primary (fancode.m3u) first, then secondary (temp.live)  
-            const channels = [...wiloCh, ...slvCh, ...astCh, ...primaryChannels, ...secondaryChannels];
+            const channels = [...astCh, ...secondaryChannels, ...wiloCh, ...slvCh,  ...primaryChannels];
 
             loadingDiv.style.display = 'none';
             const channelList = document.getElementById('channel-list');
