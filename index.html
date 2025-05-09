@@ -182,6 +182,9 @@
     </div>
 
     <script>
+        const wiloCh = 'https://github.com/drmlive/willow-live-events/raw/refs/heads/main/willow.m3u';
+        const slvCh = 'https://github.com/drmlive/sliv-live-events/raw/refs/heads/main/sonyliv.m3u';
+        const astCh = 'https://files.catbox.moe/bvrbwy.m3u';
         const m3uLinkPrimary = 'https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.m3u';
         const m3uLinkSecondary = 'https://webiptv.updatesbyrahul.site/logo_img';
         const targetUrl = 'https://a201aivottlinear-a.akamaihd.net/OTTB/lhr-nitro/clients/dash/enc/wf8usag51e/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd?|drmScheme=clearkey&drmLicense=ae26845bd33038a9c0774a0981007294:63ac662dde310cfb4cc6f9b43b34196d';
@@ -307,11 +310,14 @@
             loadingDiv.style.display = 'block';
 
             // Fetch channels from both M3U links  
+            const wiloCh = await fetchM3U(m3uWilo);
+            const slvCh = await fetchM3U(m3uSlv);
+            const astCh = await fetchM3U(m3uAst);
             const primaryChannels = await fetchM3U(m3uLinkPrimary);
             const secondaryChannels = await fetchM3U(m3uLinkSecondary);
 
             // Combine channels: primary (fancode.m3u) first, then secondary (temp.live)  
-            const channels = [...primaryChannels, ...secondaryChannels];
+            const channels = [...wiloCh, ...slvCh, ...astCh, ...primaryChannels, ...secondaryChannels];
 
             loadingDiv.style.display = 'none';
             const channelList = document.getElementById('channel-list');
@@ -355,7 +361,7 @@
             const playerContainer = document.querySelector('[data-shaka-player-container]');
 
             // Check if the channel URL is an iframe-based link  
-            const isIframeLink = /(re\.fredflix\.fun\/sports\/play\.php|sliv\.fredflix\.fun\/play\.php|fredflix\.fun\/play\.php|re\.fredflix\.fun\/Jio\/play\.php|user65873\.hls-video\.net)/.test(channel.streamUrl);
+            const isIframeLink = /(re\.fredflix\.fun|sliv\.fredflix\.fun\/play\.php|fredflix\.fun\/play\.php|re\.fredflix\.fun\/Jio\/play\.php|user4580\.ifrem\.net|ok\.ru|psplay\.site|crichd\.onlinetvbd\.com|drive\.google\.com|reduserx\.ifrem\.net|bdixiptvbd\.com|globalplay\.live|embedstreams\.top|esportspk\.github\.io|waptv\.wapka\.co|vimeo\.com|player\.updatesbyrahul\.site|cricweb\.vip|yosintv2\.github\.io)/.test(channel.streamUrl);
 
             if (isIframeLink) {
                 // Switch to iframe mode  
