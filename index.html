@@ -363,7 +363,7 @@
             const secondaryChannels = await fetchM3U(m3uLinkSecondary);
 
             // Combine channels: primary (fancode.m3u) first, then secondary (temp.live)  
-            const channels = [...astCh, ...secondaryChannels, ...wiloCh, ...slvCh,  ...primaryChannels];
+            const channels = [...astCh, ...secondaryChannels, ...wiloCh, ...slvCh, ...primaryChannels];
 
             loadingDiv.style.display = 'none';
             const channelList = document.getElementById('channel-list');
@@ -444,6 +444,20 @@
                         return null; // Block the popup from opening
                     };
                 };
+
+                // Fullscreen button functionality
+                const fullscreenButton = document.querySelector('#fullscreen-button');
+                if (fullscreenButton) {
+                    fullscreenButton.addEventListener('click', function () {
+                        if (iframe.requestFullscreen) {
+                            iframe.requestFullscreen();
+                        } else if (iframe.webkitRequestFullscreen) { // Safari
+                            iframe.webkitRequestFullscreen();
+                        } else if (iframe.msRequestFullscreen) { // IE/Edge
+                            iframe.msRequestFullscreen();
+                        }
+                    });
+                }
 
                 // Hide Shaka Player controls for iframe  
                 const controls = document.querySelector('.shaka-controls-container');
