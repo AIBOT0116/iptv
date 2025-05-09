@@ -434,31 +434,6 @@
                 iframe.src = channel.streamUrl;
                 console.log('Iframe loaded:', channel.streamUrl);
 
-                // Block popups in the iframe by overriding window.open
-                iframe.onload = function () {
-                    const iframeWindow = iframe.contentWindow;
-
-                    // Override window.open inside iframe to block popups
-                    iframeWindow.open = function () {
-                        console.log('Popup blocked');
-                        return null; // Block the popup from opening
-                    };
-                };
-
-                // Fullscreen button functionality
-                const fullscreenButton = document.querySelector('#fullscreen-button');
-                if (fullscreenButton) {
-                    fullscreenButton.addEventListener('click', function () {
-                        if (iframe.requestFullscreen) {
-                            iframe.requestFullscreen();
-                        } else if (iframe.webkitRequestFullscreen) { // Safari
-                            iframe.webkitRequestFullscreen();
-                        } else if (iframe.msRequestFullscreen) { // IE/Edge
-                            iframe.msRequestFullscreen();
-                        }
-                    });
-                }
-
                 // Hide Shaka Player controls for iframe  
                 const controls = document.querySelector('.shaka-controls-container');
                 if (controls) controls.style.display = 'none';
