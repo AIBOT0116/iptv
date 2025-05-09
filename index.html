@@ -426,7 +426,6 @@
                     iframe.allowFullscreen = true;
                     playerContainer.appendChild(iframe);
                     isIframeMode = true;
-
                 }
 
                 // Set iframe source  
@@ -472,8 +471,7 @@
                         }
                     });
 
-                    // Handle DASH with DRM 
-                    if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey') {
+                    if (channel.streamUrl.includes('.mpd') && channel.drm && channel.drmScheme === 'clearkey' && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
                         player.configure({
                             drm: {
                                 clearKeys: {
@@ -484,8 +482,7 @@
                         console.log('DRM Configured for DASH:', { keyId: channel.drm.keyId, key: channel.drm.key });
                     }
 
-                    // Load the stream (HTTP, HTTPS HLS, or DASH)  
-                    await player.load(channel.streamUrl);
+                    await player.load(channel.streamUrl.split('|')[0]); // Load only the stream URL without parameters
                     console.log('Stream loaded successfully:', channel.streamUrl);
                 } catch (error) {
                     console.error('Error loading stream:', error);
@@ -493,6 +490,7 @@
                 }
             }
         }
+
         function filterChannels() {
             const searchValue = document.getElementById('search-bar').value.toLowerCase();
             const channelTiles = document.querySelectorAll('.channel-tile');
